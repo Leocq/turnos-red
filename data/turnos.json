@@ -1,0 +1,38 @@
+[
+  {
+    "id": 102,
+    "paciente": "Carlos Ruiz",
+    "documento": "31654210",
+    "especialidad": "Pediatría",
+    "fecha": "2026-08-14",
+    "hora": "10:00",
+    "confirmado": true
+  },
+  {
+    "id": 103,
+    "paciente": "María López",
+    "documento": "28123456",
+    "especialidad": "Clínica médica",
+    "fecha": "2026-08-15",
+    "hora": "11:30",
+    "confirmado": true
+  },
+  {
+    "id": 104,
+    "paciente": "Juan Pérez",
+    "documento": "33456789",
+    "especialidad": "Odontología",
+    "fecha": "2026-08-16",
+    "hora": "09:00",
+    "confirmado": false
+  },
+  {
+    "id": 106,
+    "paciente": "Pedro Sánchez",
+    "documento": "30111222",
+    "especialidad": "Clínica médica",
+    "fecha": "2026-08-19",
+    "hora": "14:00",
+    "confirmado": true
+  }
+]

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TurnosRed - Eventos en tiempo real</title>
+  </head>
+
+  <body>
+    <h1>TurnosRed</h1>
+
+    <h2>Eventos en tiempo real</h2>
+
+    <p id="estado">Conectando con Socket.IO...</p>
+
+    <ul id="eventos"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      const socket = io();
+
+      const estado = document.getElementById("estado");
+      const eventos = document.getElementById("eventos");
+
+      function mostrarEvento(tipo, turno) {
+        const item = document.createElement("li");
+
+        item.textContent =
+          tipo + " - ID: " + turno.id + " - Paciente: " + turno.paciente;
+
+        eventos.prepend(item);
+      }
+
+      socket.on("connect", () => {
+        estado.textContent = "Conectado a Socket.IO";
+      });
+
+      socket.on("disconnect", () => {
+        estado.textContent = "Desconectado de Socket.IO";
+      });
+
+      socket.on("turno:nuevo", (turno) => {
+        mostrarEvento("Turno nuevo", turno);
+      });
+
+      socket.on("turno:actualizado", (turno) => {
+        mostrarEvento("Turno actualizado", turno);
+      });
+
+      socket.on("turno:eliminado", (turno) => {
+        mostrarEvento("Turno eliminado", turno);
+      });
+    </script>
+  </body>
+</html>
