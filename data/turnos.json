@@ -6,7 +6,8 @@
     "especialidad": "Pediatría",
     "fecha": "2026-08-14",
     "hora": "10:00",
-    "confirmado": true
+    "confirmado": true,
+    "medicoId": 1
   },
   {
     "id": 103,
@@ -15,7 +16,8 @@
     "especialidad": "Clínica médica",
     "fecha": "2026-08-15",
     "hora": "11:30",
-    "confirmado": true
+    "confirmado": true,
+    "medicoId": 2
   },
   {
     "id": 104,
@@ -24,7 +26,8 @@
     "especialidad": "Odontología",
     "fecha": "2026-08-16",
     "hora": "09:00",
-    "confirmado": false
+    "confirmado": false,
+    "medicoId": 3
   },
   {
     "id": 106,
@@ -33,6 +36,7 @@
     "especialidad": "Clínica médica",
     "fecha": "2026-08-19",
     "hora": "14:00",
-    "confirmado": true
+    "confirmado": true,
+    "medicoId": 2
   }
 ]

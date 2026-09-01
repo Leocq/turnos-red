@@ -1,17 +1,9 @@
 import "dotenv/config";
-import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
-import turnosRoutes from "./routes/turnos.routes.js";
+import { app } from "./app.js";
 import { turnosEventBus, EVENTOS_TURNOS } from "./events/turnos.events.js";
-
-const app = express();
-
-app.use(express.json());
-app.use(express.static("public"));
-
-app.use("/turnos", turnosRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 

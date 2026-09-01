@@ -1,8 +1,8 @@
 import "dotenv/config";
+import { cargarMedicosDesdeArchivo } from "./services/medicos.service.js";
 import { cargarTurnosDesdeArchivo } from "./services/turnos.service.js";
 
-const rutaArchivo = process.env.DATA_FILE ?? "./data/turnos.json";
+const turnos = await cargarTurnosDesdeArchivo();
+const medicos = await cargarMedicosDesdeArchivo();
 
-const turnos = await cargarTurnosDesdeArchivo(rutaArchivo);
-
-console.log(turnos);
+console.log({ turnos, medicos });

@@ -1,409 +1,327 @@
 # TurnosRed
 
-TurnosRed es un backend desarrollado con Node.js, TypeScript y Express para gestionar turnos médicos de diferentes centros de atención.
+TurnosRed es una API REST desarrollada con Node.js, TypeScript y Express para
+gestionar turnos y médicos de centros de atención ambulatoria. La segunda etapa
+incorpora validaciones con Zod, errores estandarizados, filtros mediante query
+parameters, persistencia en archivos JSON, pruebas automáticas en Postman y
+ejemplos guardados para Mock Server.
 
-La aplicación permite leer registros desde un archivo JSON, normalizar datos con formatos inconsistentes, gestionar los turnos mediante una API REST y comunicar cambios en tiempo real mediante Socket.IO.
+El proyecto conserva los eventos en tiempo real de la primera etapa mediante
+EventEmitter y Socket.IO.
 
-## Tecnologías utilizadas
+## Tecnologías
 
 - Node.js 22 LTS
-- TypeScript
-- Express
+- TypeScript en modo estricto y ESM
+- Express 5
+- Zod
 - Socket.IO
 - EventEmitter
 - dotenv
-- ESLint
-- Prettier
-- npm
+- ESLint y Prettier
+- Postman/Newman
 
-## Requisitos previos
+## Requisitos
 
-Para ejecutar el proyecto es necesario tener instalado:
-
-- Node.js
-- NVM
-- npm
 - Git
+- NVM
+- Node.js `22.14.0` (definido en `.nvmrc`)
+- npm
+- Postman, para ejecutar la colección y crear el Mock Server
 
-La versión de Node utilizada por el proyecto está definida en el archivo `.nvmrc`:
-
-```text
-22.14.0
-```
-
-Para seleccionar esta versión:
-
-```bash
-nvm use 22.14.0
-```
-
-## Instalación
-
-Clonar el repositorio:
+## Instalación y ejecución
 
 ```bash
 git clone https://github.com/Leocq/turnos-red.git
-```
-
-Ingresar a la carpeta del proyecto:
-
-```bash
 cd turnos-red
-```
-
-Seleccionar la versión de Node:
-
-```bash
-nvm use 22.14.0
-```
-
-Instalar las dependencias:
-
-```bash
+nvm use
 npm install
 ```
 
-Crear el archivo `.env` tomando como referencia `.env.example`.
-
-Ejemplo:
+Crear un archivo `.env` a partir de `.env.example`:
 
 ```env
 PORT=3000
 DATA_FILE=./data/turnos.json
+MEDICOS_DATA_FILE=./data/medicos.json
 ```
 
-Iniciar el servidor:
+Iniciar el servidor en desarrollo:
 
 ```bash
 npm run dev
 ```
 
-La aplicación estará disponible en:
+La API estará disponible en `http://localhost:3000`.
 
-```text
-http://localhost:3000
+También se puede compilar y ejecutar JavaScript:
+
+```bash
+npm run build
+npm start
 ```
 
 ## Variables de entorno
 
-| Variable | Descripción | Valor de ejemplo |
-|---|---|---|
-| `PORT` | Puerto utilizado por el servidor HTTP | `3000` |
-| `DATA_FILE` | Ruta del archivo JSON que contiene los turnos | `./data/turnos.json` |
+| Variable            | Descripción                                   | Ejemplo               |
+| ------------------- | --------------------------------------------- | --------------------- |
+| `PORT`              | Puerto del servidor HTTP                      | `3000`                |
+| `DATA_FILE`         | Archivo JSON utilizado para persistir turnos  | `./data/turnos.json`  |
+| `MEDICOS_DATA_FILE` | Archivo JSON utilizado para persistir médicos | `./data/medicos.json` |
 
-El archivo `.env` se encuentra excluido del repositorio mediante `.gitignore`.
+## Scripts
 
-## Scripts disponibles
+| Comando          | Descripción                              |
+| ---------------- | ---------------------------------------- |
+| `npm run dev`    | Ejecuta el servidor TypeScript con `tsx` |
+| `npm run build`  | Compila el proyecto en `dist/`           |
+| `npm start`      | Ejecuta la versión compilada             |
+| `npm run lint`   | Analiza el código con ESLint             |
+| `npm run format` | Aplica el formato de Prettier            |
 
-Los siguientes scripts se encuentran definidos en `package.json`:
+## Estructura de directorios
 
-| Comando | Descripción |
-|---|---|
-| `npm run dev` | Ejecuta el servidor TypeScript en modo desarrollo |
-| `npm run build` | Compila el código TypeScript en la carpeta `dist` |
-| `npm start` | Ejecuta la aplicación compilada |
-| `npm run lint` | Analiza el código TypeScript con ESLint |
-| `npm run format` | Aplica formato al proyecto utilizando Prettier |
-
-## Estructura del proyecto
+Todas las capas se encuentran dentro de directorios nombrados en inglés.
 
 ```text
 turnos-red/
-│
 ├── data/
+│   ├── medicos.json
 │   └── turnos.json
-│
 ├── public/
 │   └── index.html
-│
 ├── src/
 │   ├── controllers/
+│   │   ├── medicos.controller.ts
 │   │   └── turnos.controller.ts
-│   │
+│   ├── errors/
+│   │   └── app-error.ts
 │   ├── events/
 │   │   └── turnos.events.ts
-│   │
+│   ├── middlewares/
+│   │   ├── error.middleware.ts
+│   │   └── validation.middleware.ts
 │   ├── models/
+│   │   ├── especialidad.model.ts
+│   │   ├── medico.model.ts
 │   │   └── turno.model.ts
-│   │
 │   ├── routes/
+│   │   ├── medicos.routes.ts
 │   │   └── turnos.routes.ts
-│   │
+│   ├── schemas/
+│   │   ├── common.schemas.ts
+│   │   ├── medico.schemas.ts
+│   │   └── turno.schemas.ts
 │   ├── services/
-│   │   ├── normalizacion.service.ts
+│   │   ├── json-file.service.ts
+│   │   ├── medicos.service.ts
 │   │   └── turnos.service.ts
-│   │
+│   ├── utils/
+│   │   └── normalization.ts
+│   ├── app.ts
 │   ├── index.ts
 │   └── server.ts
-│
 ├── .env.example
-├── .gitignore
-├── .nvmrc
-├── eslint.config.js
-├── package.json
-├── package-lock.json
-├── tsconfig.json
-└── README.md
+├── turnos-red.postman_collection.json
+└── turnos-red.postman_environment.json
 ```
 
-### Responsabilidades
-
-- `models`: interfaces y modelos de datos.
-- `services`: lectura, escritura y normalización de los turnos.
-- `controllers`: lógica asociada a las peticiones HTTP.
-- `routes`: definición de endpoints de la API.
-- `events`: bus de eventos internos basado en EventEmitter.
-- `public`: cliente simple utilizado para demostrar los eventos Socket.IO.
-
-## Modelo de datos
-
-La aplicación diferencia entre los datos crudos recibidos y los datos normalizados utilizados internamente.
-
-### TurnoCrudo
-
-Representa los datos recibidos desde el archivo JSON, que pueden contener tipos o formatos inconsistentes.
+## Modelos
 
 ### Turno
 
-Representa los datos normalizados utilizados por la aplicación.
+| Campo           | Tipo    | Reglas principales                           |
+| --------------- | ------- | -------------------------------------------- |
+| `id`            | number  | Entero positivo y único                      |
+| `paciente`      | string  | Entre 2 y 100 caracteres                     |
+| `documento`     | string  | Entre 5 y 30 caracteres                      |
+| `especialidad`  | string  | Una de las especialidades admitidas          |
+| `fecha`         | string  | `YYYY-MM-DD` o `DD/MM/YYYY`                  |
+| `hora`          | string  | `HH:MM`; también admite `HH.MM` como entrada |
+| `confirmado`    | boolean | También admite `si`, `sí`, `no`, `1` o `0`   |
+| `medicoId`      | number  | Debe referenciar un médico existente         |
+| `observaciones` | string? | Opcional, máximo 500 caracteres              |
 
-Incluye los siguientes campos:
+### Médico
 
-- `id`
-- `paciente`
-- `documento`
-- `especialidad`
-- `fecha`
-- `hora`
-- `confirmado`
-- `observaciones` (opcional)
+| Campo          | Tipo    | Reglas principales                                |
+| -------------- | ------- | ------------------------------------------------- |
+| `id`           | number  | Entero positivo y único                           |
+| `nombre`       | string  | Entre 2 y 100 caracteres                          |
+| `documento`    | string  | Entre 5 y 30 caracteres y único                   |
+| `especialidad` | string  | Una de las especialidades admitidas               |
+| `disponible`   | boolean | También admite representaciones booleanas comunes |
 
-## Normalización de datos
+Las especialidades válidas son `Clínica médica`, `Pediatría`, `Odontología` y
+`Nutrición`. La API acepta diferencias de mayúsculas y acentos, pero almacena y
+responde siempre con el formato normalizado.
 
-Un registro de entrada puede tener el siguiente formato:
+La especialidad del turno debe coincidir con la del médico indicado en
+`medicoId`. No se permite eliminar un médico mientras tenga turnos asignados.
+
+## Endpoints de turnos
+
+| Método   | Endpoint      | Resultado exitoso | Descripción                   |
+| -------- | ------------- | ----------------- | ----------------------------- |
+| `GET`    | `/turnos`     | `200 OK`          | Lista y filtra turnos         |
+| `GET`    | `/turnos/:id` | `200 OK`          | Obtiene un turno por ID       |
+| `POST`   | `/turnos`     | `201 Created`     | Crea un turno                 |
+| `PUT`    | `/turnos/:id` | `200 OK`          | Reemplaza los datos del turno |
+| `DELETE` | `/turnos/:id` | `204 No Content`  | Elimina un turno              |
+
+Ejemplo de creación:
 
 ```json
 {
-  "id": "102",
-  "paciente": "   Carlos Ruiz ",
-  "documento": 31654210,
-  "especialidad": "PEDIATRÍA",
-  "fecha": "14/08/2026",
-  "hora": "10.00",
-  "confirmado": "si"
-}
-```
-
-Después del proceso de normalización se transforma en:
-
-```json
-{
-  "id": 102,
-  "paciente": "Carlos Ruiz",
-  "documento": "31654210",
+  "id": 999,
+  "paciente": "Lucía Ramos",
+  "documento": "40123456",
   "especialidad": "Pediatría",
-  "fecha": "2026-08-14",
-  "hora": "10:00",
-  "confirmado": true
+  "fecha": "20/08/2026",
+  "hora": "15.30",
+  "confirmado": "si",
+  "medicoId": 1
 }
 ```
 
-Durante el proceso se realizan, entre otras, las siguientes operaciones:
+### Filtros de turnos
 
-- Conversión del `id` a número.
-- Conversión del documento a string.
-- Eliminación de espacios innecesarios en el nombre del paciente.
-- Normalización de especialidades.
-- Conversión de fecha al formato `YYYY-MM-DD`.
-- Normalización de la hora.
-- Conversión del valor de confirmación a boolean.
-- Validación del `id` como entero positivo.
-
-Los registros que no cumplen la estructura mínima requerida son rechazados.
-
-La aplicación informa por consola la cantidad de registros aceptados y rechazados.
-
-## Lectura de archivos
-
-El archivo `turnos.json` se lee de forma asíncrona mediante:
-
-```text
-node:fs/promises
-```
-
-Se utiliza `async/await` junto con bloques `try...catch` para gestionar errores.
-
-También se incluye en el código un ejemplo comparativo utilizando callbacks con `node:fs`, con el objetivo de mostrar la diferencia entre ambos enfoques.
-
-## API REST
-
-### Obtener todos los turnos
+`GET /turnos` admite los parámetros opcionales `especialidad`, `fecha` y
+`medicoId`. Se pueden combinar sin crear endpoints adicionales.
 
 ```http
-GET /turnos
+GET /turnos?especialidad=Pediatria&fecha=14/08/2026&medicoId=1
 ```
 
-Respuesta exitosa:
+## Endpoints de médicos
 
-```text
-200 OK
-```
+| Método   | Endpoint       | Resultado exitoso | Descripción                    |
+| -------- | -------------- | ----------------- | ------------------------------ |
+| `GET`    | `/medicos`     | `200 OK`          | Lista y filtra médicos         |
+| `GET`    | `/medicos/:id` | `200 OK`          | Obtiene un médico por ID       |
+| `POST`   | `/medicos`     | `201 Created`     | Registra un médico             |
+| `PUT`    | `/medicos/:id` | `200 OK`          | Reemplaza los datos del médico |
+| `DELETE` | `/medicos/:id` | `204 No Content`  | Da de baja un médico           |
 
-### Obtener un turno por ID
-
-```http
-GET /turnos/:id
-```
-
-Ejemplo:
-
-```text
-GET /turnos/102
-```
-
-Posibles respuestas:
-
-- `200 OK`
-- `400 Bad Request`
-- `404 Not Found`
-- `500 Internal Server Error`
-
-### Crear un turno
-
-```http
-POST /turnos
-```
-
-Ejemplo de Body:
+Ejemplo de creación:
 
 ```json
 {
-  "id": "106",
-  "paciente": "Pedro Sánchez",
-  "documento": 30111222,
-  "especialidad": "CLÍNICA MÉDICA",
-  "fecha": "19/08/2026",
-  "hora": "14.00",
-  "confirmado": "si"
+  "id": 50,
+  "nombre": "Sofía Díaz",
+  "documento": "30123456",
+  "especialidad": "Pediatría",
+  "disponible": true
 }
 ```
 
-Respuesta exitosa:
+### Filtros de médicos
 
-```text
-201 Created
-```
-
-### Actualizar un turno
+`GET /medicos` admite los parámetros opcionales `especialidad` y `disponible`.
 
 ```http
-PUT /turnos/:id
+GET /medicos?especialidad=Odontologia&disponible=false
 ```
 
-Ejemplo:
+## Validaciones Zod y errores estandarizados
 
-```text
-PUT /turnos/106
+El middleware de validación procesa `body`, `params` y `query` antes de llegar
+al controlador. Un error de Zod se responde con `400 Bad Request` e identifica
+cada campo inválido:
+
+```json
+{
+  "status": 400,
+  "message": "Error de validación en los datos ingresados",
+  "code": "VALIDATION_ERROR",
+  "details": [
+    {
+      "field": "body.documento",
+      "message": "El documento debe ser un string"
+    }
+  ]
+}
 ```
 
-Respuesta exitosa:
+El middleware central de errores aplica la misma estructura a respuestas `400`,
+`404` y `500`, incluyendo JSON mal formado y rutas inexistentes.
 
-```text
-200 OK
+## Postman, pruebas automáticas y Mock Server
+
+Importar en Postman:
+
+1. `turnos-red.postman_collection.json`.
+2. `turnos-red.postman_environment.json`.
+3. Seleccionar el entorno `TurnosRed - Local`.
+4. Iniciar la API con `npm run dev`.
+5. Ejecutar la colección completa con **Run collection**.
+
+La colección contiene 16 peticiones y 30 aserciones para escenarios exitosos y
+casos borde: `200`, `201`, `204`, `400` y `404`. También valida arrays, campos
+requeridos, esquemas JSON, filtros y el formato uniforme de errores.
+
+Variables utilizadas:
+
+| Variable   | Uso                                                     |
+| ---------- | ------------------------------------------------------- |
+| `baseUrl`  | URL de la API local o del Mock Server                   |
+| `token`    | Variable reservada para autenticación Bearer            |
+| `medicoId` | ID creado y reutilizado dinámicamente durante la prueba |
+| `turnoId`  | ID creado y reutilizado dinámicamente durante la prueba |
+
+Cada petición incluye al menos una respuesta guardada. Para crear el Mock
+Server en Postman, seleccionar la colección, elegir **Mock collection** y luego
+reemplazar `baseUrl` por la URL generada. Postman responderá utilizando los
+Saved Examples sin requerir que la API local esté encendida.
+
+La colección también puede ejecutarse con Newman:
+
+```bash
+npx newman run turnos-red.postman_collection.json \
+  --environment turnos-red.postman_environment.json
 ```
 
-### Eliminar un turno
+## Eventos y Socket.IO
 
-```http
-DELETE /turnos/:id
-```
+Las operaciones exitosas sobre turnos generan eventos internos:
 
-Ejemplo:
+- `turno:creado`
+- `turno:actualizado`
+- `turno:eliminado`
 
-```text
-DELETE /turnos/106
-```
+El servidor los retransmite mediante Socket.IO como `turno:nuevo`,
+`turno:actualizado` y `turno:eliminado`. El cliente de demostración se encuentra
+en `public/index.html` y se abre desde `http://localhost:3000`.
 
-Respuesta exitosa:
-
-```text
-200 OK
-```
-
-## Eventos internos
-
-La aplicación implementa un bus de eventos utilizando el módulo nativo `EventEmitter` de Node.js.
-
-Los eventos internos son:
-
-```text
-turno:creado
-turno:actualizado
-turno:eliminado
-```
-
-Estos eventos se generan después de una operación exitosa de creación, actualización o eliminación.
-
-## Comunicación en tiempo real
-
-Socket.IO se encuentra integrado con el servidor HTTP de Express.
-
-Los eventos internos son retransmitidos a los clientes conectados utilizando:
-
-```text
-turno:nuevo
-turno:actualizado
-turno:eliminado
-```
-
-Por ejemplo:
-
-```text
-turno:creado
-        ↓
-EventEmitter
-        ↓
-turno:nuevo
-        ↓
-Socket.IO
-        ↓
-Cliente conectado
-```
-
-El cliente de prueba puede abrirse en:
-
-```text
-http://localhost:3000
-```
-
-Cuando se crea, modifica o elimina un turno mediante la API, el cliente recibe el evento automáticamente sin recargar la página y sin utilizar polling.
-
-## Calidad del código
-
-Antes de realizar una entrega se pueden ejecutar los siguientes comandos:
+## Verificación de calidad
 
 ```bash
 npm run format
 npm run lint
-npx tsc --noEmit
-```
-
-Para compilar el proyecto:
-
-```bash
 npm run build
 ```
 
-La salida compilada se genera dentro de:
+La ejecución de control de la colección obtuvo:
 
-```text
-dist/
-```
+- 16 peticiones ejecutadas.
+- 16 scripts de prueba.
+- 30 aserciones.
+- 0 errores.
 
-Esta carpeta no se incluye en Git porque se encuentra declarada en `.gitignore`.
+## Uso de Inteligencia Artificial
+
+La IA se utilizó como asistencia para acelerar la propuesta inicial. Todo el
+código fue revisado, adaptado al repositorio existente y verificado manualmente
+mediante compilación, lint y pruebas HTTP/Postman.
+
+| Tarea                  | Herramienta   | Prompt utilizado                                                                                             | Respuesta generada                                                                               | Ajuste manual aplicado                                                                                         |
+| ---------------------- | ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Arquitectura y errores | ChatGPT/Codex | “Refactoriza la API TurnosRed para usar capas, errores JSON uniformes y códigos REST correctos.”             | Propuesta de `AppError`, middleware central y separación entre rutas, controladores y servicios. | Se adaptaron nombres, imports ESM, Express 5 y eventos existentes; se cambió DELETE a `204`.                   |
+| Schemas Zod            | ChatGPT/Codex | “Crea schemas Zod para Turno y Médico, documento string, especialidades normalizadas y detalle por campo.”   | Esquemas para body, params y query con transformaciones y mensajes.                              | Se limitaron especialidades a la consigna, se validaron fechas reales y se agregó la relación `medicoId`.      |
+| CRUD y filtros         | ChatGPT/Codex | “Agrega CRUD `/medicos` y filtros combinables para turnos y médicos sin endpoints nuevos.”                   | Servicios y controladores con filtros por especialidad, fecha, médico y disponibilidad.          | Se conservaron archivos JSON, se agregaron datos coherentes y se impidió borrar médicos con turnos.            |
+| Pruebas Postman        | ChatGPT/Codex | “Genera una colección Postman con variables, tests 200/201/204/400/404 y Saved Examples para Mock Server.”   | Colección con escenarios Happy Path y errores.                                                   | Se ordenaron las peticiones para crear y limpiar datos, se probaron con Newman y se verificaron 30 aserciones. |
+| Documentación          | ChatGPT/Codex | “Actualiza el README con instalación, variables, directorios, endpoints, query params, Postman y uso de IA.” | Borrador técnico completo.                                                                       | Se corrigieron comandos, ejemplos y resultados para que coincidan con la implementación final.                 |
 
 ## Repositorio
-
-Repositorio público del proyecto:
 
 https://github.com/Leocq/turnos-red

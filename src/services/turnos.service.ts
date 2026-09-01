@@ -1,75 +1,110 @@
-import { readFile, writeFile } from "node:fs/promises";
-import type { Turno, TurnoCrudo } from "../models/turno.model.js";
-import { normalizarTurno } from "./normalizacion.service.js";
+import { AppError } from "../errors/app-error.js";
+import type { FiltrosTurnos, Turno } from "../models/turno.model.js";
+import { turnoPersistidoSchema } from "../schemas/turno.schemas.js";
+import {
+  normalizarEspecialidad,
+  normalizarFecha,
+} from "../utils/normalization.js";
+import { readJsonArray, writeJsonArray } from "./json-file.service.js";
+
+export function obtenerRutaTurnos(): string {
+  return process.env.DATA_FILE ?? "./data/turnos.json";
+}
 
 export async function cargarTurnosDesdeArchivo(
-  rutaArchivo: string,
+  rutaArchivo = obtenerRutaTurnos(),
 ): Promise<Turno[]> {
-  try {
-    const contenido = await readFile(rutaArchivo, "utf-8");
-    const datos: unknown = JSON.parse(contenido);
+  const datos = await readJsonArray(rutaArchivo);
+  const turnos: Turno[] = [];
 
-    if (!Array.isArray(datos)) {
-      throw new Error("El archivo JSON debe contener un array de turnos.");
+  for (const [indice, registro] of datos.entries()) {
+    const resultado = turnoPersistidoSchema.safeParse(registro);
+
+    if (!resultado.success) {
+      throw new Error(
+        `El turno en la posición ${indice} de ${rutaArchivo} no es válido`,
+      );
     }
 
-    const turnosAceptados: Turno[] = [];
-    let rechazados = 0;
-
-    for (const registro of datos) {
-      if (typeof registro !== "object" || registro === null) {
-        rechazados++;
-        continue;
-      }
-
-      const turno = normalizarTurno(registro as TurnoCrudo);
-
-      if (turno) {
-        turnosAceptados.push(turno);
-      } else {
-        rechazados++;
-      }
-    }
-
-    console.log(`Registros aceptados: ${turnosAceptados.length}`);
-    console.log(`Registros rechazados: ${rechazados}`);
-
-    return turnosAceptados;
-  } catch (error) {
-    console.error("Error al leer o procesar turnos.json:", error);
-    throw error;
+    turnos.push(resultado.data);
   }
+
+  return turnos;
 }
 
-export async function guardarTurnosEnArchivo(
-  rutaArchivo: string,
-  turnos: Turno[],
-): Promise<void> {
-  try {
-    const contenido = JSON.stringify(turnos, null, 2);
-
-    await writeFile(rutaArchivo, contenido, "utf-8");
-  } catch (error) {
-    console.error("Error al guardar turnos.json:", error);
-    throw error;
-  }
+async function guardarTurnos(turnos: Turno[]): Promise<void> {
+  await writeJsonArray(obtenerRutaTurnos(), turnos);
 }
 
-/*
-Ejemplo equivalente utilizando callbacks con node:fs:
+export async function listarTurnos(
+  filtros: FiltrosTurnos = {},
+): Promise<Turno[]> {
+  let turnos = await cargarTurnosDesdeArchivo();
 
-import { readFile } from "node:fs";
-
-readFile("./data/turnos.json", "utf-8", (error, contenido) => {
-  if (error) {
-    console.error(error);
-    return;
+  if (filtros.especialidad) {
+    const especialidad = normalizarEspecialidad(filtros.especialidad);
+    turnos = turnos.filter((turno) => turno.especialidad === especialidad);
   }
 
-  const datos = JSON.parse(contenido);
-  console.log(datos);
-});
+  if (filtros.fecha) {
+    const fecha = normalizarFecha(filtros.fecha);
+    turnos = turnos.filter((turno) => turno.fecha === fecha);
+  }
 
-Se utiliza node:fs/promises porque async/await permite un flujo más
-legible y facilita el manejo de errores mediante try...catch.
-*/
+  if (filtros.medicoId !== undefined) {
+    const medicoId = Number(filtros.medicoId);
+    turnos = turnos.filter((turno) => turno.medicoId === medicoId);
+  }
+
+  return turnos;
+}
+
+export async function buscarTurnoPorId(id: number): Promise<Turno | undefined> {
+  const turnos = await cargarTurnosDesdeArchivo();
+  return turnos.find((turno) => turno.id === id);
+}
+
+export async function crearTurno(turno: Turno): Promise<Turno> {
+  const turnos = await cargarTurnosDesdeArchivo();
+
+  if (turnos.some((existente) => existente.id === turno.id)) {
+    throw new AppError(
+      400,
+      `Ya existe un turno con el ID ${turno.id}`,
+      "DUPLICATE_TURNO_ID",
+    );
+  }
+
+  turnos.push(turno);
+  await guardarTurnos(turnos);
+  return turno;
+}
+
+export async function actualizarTurno(
+  id: number,
+  turno: Turno,
+): Promise<Turno | undefined> {
+  const turnos = await cargarTurnosDesdeArchivo();
+  const indice = turnos.findIndex((existente) => existente.id === id);
+
+  if (indice === -1) {
+    return undefined;
+  }
+
+  turnos[indice] = turno;
+  await guardarTurnos(turnos);
+  return turno;
+}
+
+export async function eliminarTurno(id: number): Promise<Turno | undefined> {
+  const turnos = await cargarTurnosDesdeArchivo();
+  const indice = turnos.findIndex((turno) => turno.id === id);
+
+  if (indice === -1) {
+    return undefined;
+  }
+
+  const [eliminado] = turnos.splice(indice, 1);
+  await guardarTurnos(turnos);
+  return eliminado;
+}
