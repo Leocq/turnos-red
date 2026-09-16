@@ -92,6 +92,7 @@ turnos-red/
 │   └── index.html
 ├── src/
 │   ├── controllers/
+│   │   ├── general.controller.ts
 │   │   ├── medicos.controller.ts
 │   │   └── turnos.controller.ts
 │   ├── errors/
@@ -117,6 +118,7 @@ turnos-red/
 │   │   ├── medicos.service.ts
 │   │   └── turnos.service.ts
 │   ├── utils/
+│   │   ├── error-response.ts
 │   │   └── normalization.ts
 │   ├── app.ts
 │   ├── index.ts
@@ -158,6 +160,16 @@ responde siempre con el formato normalizado.
 
 La especialidad del turno debe coincidir con la del médico indicado en
 `medicoId`. No se permite eliminar un médico mientras tenga turnos asignados.
+
+## Endpoint general
+
+| Método | Endpoint | Resultado exitoso | Descripción                          |
+| ------ | -------- | ----------------- | ------------------------------------ |
+| `GET`  | `/`      | `200 OK`          | Mensaje de bienvenida de la API      |
+
+Cualquier ruta no contemplada por la aplicación es capturada por el controlador
+general y responde `404 Not Found` con la estructura de error estándar. Ambos
+casos se resuelven en `general.controller.ts`.
 
 ## Endpoints de turnos
 
@@ -243,8 +255,23 @@ cada campo inválido:
 }
 ```
 
-El middleware central de errores aplica la misma estructura a respuestas `400`,
-`404` y `500`, incluyendo JSON mal formado y rutas inexistentes.
+El middleware central de errores aplica la misma estructura a respuestas `400`
+y `500`, incluyendo JSON mal formado. Las rutas inexistentes (`404`) las resuelve
+el controlador general.
+
+### Flujo de control en los controladores
+
+Cada método de los controladores es `async` y sigue el mismo patrón:
+
+- Declara una variable local `status` que se ajusta según el resultado del flujo
+  (camino feliz o casos alternativos).
+- Aplica validaciones previas y, cuando alguna no se cumple, lanza un error
+  (`throw`) con su código de estado, cortando la ejecución con retorno
+  anticipado.
+- Envuelve la lógica en un bloque `try-catch`; el `catch` delega en
+  `enviarError` para responder siempre con la estructura estándar.
+- Usa `return` junto a cada respuesta para evitar envíos de cabeceras duplicados
+  (`headers already sent`).
 
 ## Postman, pruebas automáticas y Mock Server
 

@@ -35,6 +35,98 @@
   ],
   "item": [
     {
+      "name": "00 - General",
+      "item": [
+        {
+          "name": "GET Bienvenida - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Estado 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Mensaje de bienvenida', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('message');",
+                  "  pm.expect(body).to.have.property('code', 'WELCOME');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/"
+          },
+          "response": [
+            {
+              "name": "Bienvenida - 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Bienvenido a la API de TurnosRed\",\n  \"code\": \"WELCOME\",\n  \"data\": {\n    \"nombre\": \"TurnosRed API\",\n    \"version\": \"1.0.0\",\n    \"recursos\": [\n      \"/turnos\",\n      \"/medicos\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Ruta inexistente - 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Estado 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Error estándar de ruta inexistente', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('status', 404);",
+                  "  pm.expect(body).to.have.property('code', 'ROUTE_NOT_FOUND');",
+                  "  pm.expect(body).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ruta-inexistente"
+          },
+          "response": [
+            {
+              "name": "Ruta inexistente - 404",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/ruta-inexistente"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 404,\n  \"message\": \"La ruta GET /ruta-inexistente no existe\",\n  \"code\": \"ROUTE_NOT_FOUND\",\n  \"details\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "01 - Preparación",
       "item": [
         {
@@ -161,12 +253,25 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/turnos?especialidad=Pediatria&fecha=14/08/2026&medicoId=1",
-              "host": ["{{baseUrl}}"],
-              "path": ["turnos"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ],
               "query": [
-                { "key": "especialidad", "value": "Pediatria" },
-                { "key": "fecha", "value": "14/08/2026" },
-                { "key": "medicoId", "value": "1" }
+                {
+                  "key": "especialidad",
+                  "value": "Pediatria"
+                },
+                {
+                  "key": "fecha",
+                  "value": "14/08/2026"
+                },
+                {
+                  "key": "medicoId",
+                  "value": "1"
+                }
               ]
             }
           },
@@ -181,7 +286,10 @@
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "[\n  {\n    \"id\": 102,\n    \"paciente\": \"Carlos Ruiz\",\n    \"documento\": \"31654210\",\n    \"especialidad\": \"Pediatría\",\n    \"fecha\": \"2026-08-14\",\n    \"hora\": \"10:00\",\n    \"confirmado\": true,\n    \"medicoId\": 1\n  }\n]"
             }
@@ -217,7 +325,10 @@
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"id\": 102,\n  \"paciente\": \"Carlos Ruiz\",\n  \"documento\": \"31654210\",\n  \"especialidad\": \"Pediatría\",\n  \"fecha\": \"2026-08-14\",\n  \"hora\": \"10:00\",\n  \"confirmado\": true,\n  \"medicoId\": 1\n}"
             }
@@ -240,7 +351,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"id\": {{turnoId}},\n  \"paciente\": \"Lucía Ramos\",\n  \"documento\": \"40123456\",\n  \"especialidad\": \"Pediatría\",\n  \"fecha\": \"20/08/2026\",\n  \"hora\": \"15.30\",\n  \"confirmado\": \"si\",\n  \"medicoId\": {{medicoId}}\n}"
@@ -253,7 +369,10 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
@@ -264,7 +383,10 @@
               "status": "Created",
               "code": 201,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"id\": 999,\n  \"paciente\": \"Lucía Ramos\",\n  \"documento\": \"40123456\",\n  \"especialidad\": \"Pediatría\",\n  \"fecha\": \"2026-08-20\",\n  \"hora\": \"15:30\",\n  \"confirmado\": true,\n  \"medicoId\": 50\n}"
             }
@@ -286,7 +408,12 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"paciente\": \"Lucía Ramos\",\n  \"documento\": \"40123456\",\n  \"especialidad\": \"Pediatría\",\n  \"fecha\": \"2026-08-21\",\n  \"hora\": \"16:00\",\n  \"confirmado\": true,\n  \"medicoId\": {{medicoId}},\n  \"observaciones\": \"Control actualizado\"\n}"
@@ -299,14 +426,20 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "url": "{{baseUrl}}/turnos/999"
               },
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"id\": 999,\n  \"paciente\": \"Lucía Ramos\",\n  \"documento\": \"40123456\",\n  \"especialidad\": \"Pediatría\",\n  \"fecha\": \"2026-08-21\",\n  \"hora\": \"16:00\",\n  \"confirmado\": true,\n  \"medicoId\": 50,\n  \"observaciones\": \"Control actualizado\"\n}"
             }
@@ -361,7 +494,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"id\": -1,\n  \"paciente\": \"\",\n  \"documento\": 40123456,\n  \"especialidad\": \"Cardiología\",\n  \"fecha\": \"fecha-invalida\",\n  \"hora\": \"99:99\",\n  \"confirmado\": \"tal vez\",\n  \"medicoId\": 0\n}"
@@ -374,14 +512,20 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "url": "{{baseUrl}}/turnos"
               },
               "status": "Bad Request",
               "code": 400,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"status\": 400,\n  \"message\": \"Error de validación en los datos ingresados\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"body.documento\",\n      \"message\": \"El documento debe ser un string\"\n    }\n  ]\n}"
             }
@@ -417,7 +561,10 @@
               "status": "Not Found",
               "code": 404,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"status\": 404,\n  \"message\": \"Turno no encontrado\",\n  \"code\": \"TURNO_NOT_FOUND\",\n  \"details\": []\n}"
             }
@@ -458,7 +605,10 @@
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Ana Torres\",\n    \"documento\": \"20111222\",\n    \"especialidad\": \"Pediatría\",\n    \"disponible\": true\n  }\n]"
             }
@@ -494,7 +644,10 @@
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "[\n  {\n    \"id\": 3,\n    \"nombre\": \"Laura Gómez\",\n    \"documento\": \"24555666\",\n    \"especialidad\": \"Odontología\",\n    \"disponible\": false\n  }\n]"
             }
@@ -530,7 +683,10 @@
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"id\": 50,\n  \"nombre\": \"Sofía Díaz\",\n  \"documento\": \"30123456\",\n  \"especialidad\": \"Pediatría\",\n  \"disponible\": true\n}"
             }
@@ -552,7 +708,12 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nombre\": \"Sofía Díaz\",\n  \"documento\": \"30123456\",\n  \"especialidad\": \"Pediatría\",\n  \"disponible\": false\n}"
@@ -565,14 +726,20 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "url": "{{baseUrl}}/medicos/50"
               },
               "status": "OK",
               "code": 200,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"id\": 50,\n  \"nombre\": \"Sofía Díaz\",\n  \"documento\": \"30123456\",\n  \"especialidad\": \"Pediatría\",\n  \"disponible\": false\n}"
             }
@@ -594,7 +761,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"id\": 51,\n  \"nombre\": \"X\",\n  \"documento\": 30123457,\n  \"especialidad\": \"Cardiología\",\n  \"disponible\": \"tal vez\"\n}"
@@ -607,14 +779,20 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "url": "{{baseUrl}}/medicos"
               },
               "status": "Bad Request",
               "code": 400,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"status\": 400,\n  \"message\": \"Error de validación en los datos ingresados\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"body.documento\",\n      \"message\": \"El documento debe ser un string\"\n    }\n  ]\n}"
             }
@@ -650,7 +828,10 @@
               "status": "Not Found",
               "code": 404,
               "header": [
-                { "key": "Content-Type", "value": "application/json" }
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
               "body": "{\n  \"status\": 404,\n  \"message\": \"Médico no encontrado\",\n  \"code\": \"MEDICO_NOT_FOUND\",\n  \"details\": []\n}"
             }

@@ -1,16 +1,12 @@
-import type { ErrorRequestHandler, RequestHandler } from "express";
-import { AppError } from "../errors/app-error.js";
+import type { ErrorRequestHandler } from "express";
+import { enviarError } from "../utils/error-response.js";
 
-export const notFoundHandler: RequestHandler = (req, _res, next) => {
-  next(
-    new AppError(
-      404,
-      `La ruta ${req.method} ${req.originalUrl} no existe`,
-      "ROUTE_NOT_FOUND",
-    ),
-  );
-};
-
+/**
+ * Middleware central de errores. Captura los errores que llegan desde los
+ * middlewares previos (por ejemplo, las validaciones de Zod) y el JSON mal
+ * formado del body, delegando el formato de la respuesta en enviarError
+ * para mantener la estructura estándar en toda la API.
+ */
 export const errorHandler: ErrorRequestHandler = (
   error: unknown,
   _req,
@@ -31,22 +27,5 @@ export const errorHandler: ErrorRequestHandler = (
     return;
   }
 
-  if (error instanceof AppError) {
-    res.status(error.status).json({
-      status: error.status,
-      message: error.message,
-      code: error.code,
-      details: error.details,
-    });
-    return;
-  }
-
-  console.error(error);
-
-  res.status(500).json({
-    status: 500,
-    message: "Ocurrió un error interno en el servidor",
-    code: "INTERNAL_SERVER_ERROR",
-    details: [],
-  });
+  enviarError(res, error);
 };
