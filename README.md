@@ -124,9 +124,16 @@ turnos-red/
 │   ├── index.ts
 │   └── server.ts
 ├── .env.example
+├── pacientes-turnos.md
 ├── turnos-red.postman_collection.json
 └── turnos-red.postman_environment.json
 ```
+
+## Módulo Pacientes y Turnos (propuesta)
+
+La propuesta conceptual y técnica del nuevo módulo de **Pacientes y Turnos**
+(modelado de datos y definición de los endpoints como _mockup_ RESTful) está
+documentada en [`pacientes-turnos.md`](./pacientes-turnos.md).
 
 ## Modelos
 
@@ -235,6 +242,29 @@ Ejemplo de creación:
 GET /medicos?especialidad=Odontologia&disponible=false
 ```
 
+## Códigos de estado por operación
+
+Resumen de los códigos HTTP que devuelve cada endpoint, tanto en los escenarios
+exitosos como en los de error.
+
+| Operación                | Éxito | Errores posibles                                         |
+| ------------------------ | ----- | -------------------------------------------------------- |
+| `GET /`                  | `200` | `500`                                                    |
+| Ruta inexistente         | —     | `404` (`ROUTE_NOT_FOUND`)                                |
+| `GET /turnos`            | `200` | `400` (query inválida), `500`                            |
+| `GET /turnos/:id`        | `200` | `400` (id inválido), `404` (`TURNO_NOT_FOUND`), `500`    |
+| `POST /turnos`           | `201` | `400` (Zod / médico inexistente / especialidad), `500`   |
+| `PUT /turnos/:id`        | `200` | `400`, `404` (`TURNO_NOT_FOUND`), `500`                  |
+| `DELETE /turnos/:id`     | `204` | `400` (id inválido), `404` (`TURNO_NOT_FOUND`), `500`    |
+| `GET /medicos`           | `200` | `400` (query inválida), `500`                            |
+| `GET /medicos/:id`       | `200` | `400` (id inválido), `404` (`MEDICO_NOT_FOUND`), `500`   |
+| `POST /medicos`          | `201` | `400` (Zod / `DUPLICATE_MEDICO_ID` / documento), `500`   |
+| `PUT /medicos/:id`       | `200` | `400`, `404` (`MEDICO_NOT_FOUND`), `500`                 |
+| `DELETE /medicos/:id`    | `204` | `400` (`MEDICO_HAS_TURNOS`), `404`, `500`                |
+
+Todas las respuestas de error comparten la estructura estándar
+`{ status, message, code, details }` descrita a continuación.
+
 ## Validaciones Zod y errores estandarizados
 
 El middleware de validación procesa `body`, `params` y `query` antes de llegar
@@ -287,11 +317,16 @@ La colección contiene 16 peticiones y 30 aserciones para escenarios exitosos y
 casos borde: `200`, `201`, `204`, `400` y `404`. También valida arrays, campos
 requeridos, esquemas JSON, filtros y el formato uniforme de errores.
 
+Todas las peticiones de la colección usan la variable `{{baseUrl}}` en lugar de
+una URL fija. `baseUrl` está definida a nivel de **colección** y también en el
+**environment** `TurnosRed - Local`, de modo que la resolución dinámica funciona
+al centralizar el origin del servidor en un único lugar.
+
 Variables utilizadas:
 
 | Variable   | Uso                                                     |
 | ---------- | ------------------------------------------------------- |
-| `baseUrl`  | URL de la API local o del Mock Server                   |
+| `baseUrl`  | URL base de la API (colección + environment), local o Mock Server |
 | `token`    | Variable reservada para autenticación Bearer            |
 | `medicoId` | ID creado y reutilizado dinámicamente durante la prueba |
 | `turnoId`  | ID creado y reutilizado dinámicamente durante la prueba |
@@ -348,6 +383,7 @@ mediante compilación, lint y pruebas HTTP/Postman.
 | CRUD y filtros         | ChatGPT/Codex | “Agrega CRUD `/medicos` y filtros combinables para turnos y médicos sin endpoints nuevos.”                   | Servicios y controladores con filtros por especialidad, fecha, médico y disponibilidad.          | Se conservaron archivos JSON, se agregaron datos coherentes y se impidió borrar médicos con turnos.            |
 | Pruebas Postman        | ChatGPT/Codex | “Genera una colección Postman con variables, tests 200/201/204/400/404 y Saved Examples para Mock Server.”   | Colección con escenarios Happy Path y errores.                                                   | Se ordenaron las peticiones para crear y limpiar datos, se probaron con Newman y se verificaron 30 aserciones. |
 | Documentación          | ChatGPT/Codex | “Actualiza el README con instalación, variables, directorios, endpoints, query params, Postman y uso de IA.” | Borrador técnico completo.                                                                       | Se corrigieron comandos, ejemplos y resultados para que coincidan con la implementación final.                 |
+| Mockup Pacientes/Turnos | ChatGPT/Codex | “Diseña el modelado de datos y dos endpoints RESTful para el módulo de Pacientes y Turnos según Clean Architecture.” | Borrador de `pacientes-turnos.md` con entidades, interfaces TypeScript y specs de endpoints. | Se ajustaron reglas de validación, la relación `pacienteId`/`medicoId` y los códigos de estado a la convención del proyecto. |
 
 ## Repositorio
 
